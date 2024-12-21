@@ -2,8 +2,8 @@ fx_version 'cerulean'
 
 game { 'gta5' }
 
-author 'Yorick'
-description 'Simple script that is supposed to serve as something like a "antilag" kind of thing for FiveM'
+author 'MaximumQc'
+description 'Simple script "antilag" for FiveM'
 version '1.0.0'
 
 ui_page('html/index.html')
