@@ -1,24 +1,67 @@
-# yorick-antilag
+# MQC-Antilag
 
-This script enables antilag and "twostep" functionality in your FiveM server. <br>
-There is a file `config.lua` which you can use to add new cars to the config or to modify existing values!
+This script enables dynamic antilag functionality in your FiveM server. A configuration file, `config.lua`, is included to allow easy modification of existing values.
 
-# Configuration
+---
 
-In addition to enabling antilag, you can also configure the following options:
+## Configuration
 
-- explosionSpeed: The speed at which the explosion is created. Default value is 250. <br>
-- Cars: This cars in this array have the possibility to use the functionality of the script. <br>
-- flameSize: The size of the flames. Default is 1.5. <br>
-- RPM: The amount of RPM needed until the antilag is triggered. <br>
+The script provides flexible options for fine-tuning antilag behavior. Below are the key configuration parameters:
 
-# Commands 
+- **antilagmaxspeed** & **antilagminspeed**: Set thresholds for the explosion events based on vehicle speed.
+  - Example: If `antilagminspeed` is set to `1000` and `antilagmaxspeed` to `50`, explosions are faster at high RPM and slower at low RPM. Setting both to `50` creates consistently fast and chaotic explosions.
 
-- `/antilag` This is a command that makes it possible to turn off the functionality of the script for that client.
+- **flameSize**: Adjust the size of the flames.
+  - Default: `2.0` (Set to `1.0` for smaller flames).
 
-# Custom audio
-- The script uses custom audio files that are played using NUI.
+- **RPM**: Define the RPM range required to trigger antilag.
+  - `0.1`: Triggers antilag at idle.
+  - `0.9`: Triggers antilag only at maximum RPM.
 
-# Usage
+---
 
-To use antilag in your FiveM server, simply start the yorick-antilag resource, `ensure yorick-antilag`. By default, the antilag effect is triggered when the driver of the vehicle releases the W key when the car reaches a specific amount of RPM.
+## Commands
+
+The script includes several commands for managing and customizing antilag settings:
+
+- **/antilag**: Toggles antilag on or off for the current vehicle. The setting remains active for that vehicle but will reset when switching vehicles.
+
+- **/antilagmaxspeed**: Configures the maximum speed threshold for explosion events.
+  - Example: `50` (fast explosions), `1000` (slow explosions).
+  - Default: `250`.
+
+- **/antilagminspeed**: Configures the minimum speed threshold for explosion events.
+  - Example: `50` (fast explosions), `1000` (slow explosions).
+  - Default: `50`.
+
+- **/antilagpitch**: Adjusts the pitch individually for each player.
+
+- **/antilagmaxrpm**: Sets the RPM level required to trigger the rev limiter and activate antilag.
+  - Example:
+    - `0.9`: Triggers antilag during acceleration.
+    - `0.96`: Provides a pop sound during gear shifts (optimal for most cars).
+    - `1.0`: Requires the car to be on the chip/limiter to trigger antilag.
+
+---
+
+## Custom Audio
+
+The script includes custom audio features to enhance the antilag experience:
+
+- Utilizes custom audio files played via NUI.
+- Offers configurable pitch range and fade effects.
+- Fully synced across all players.
+- Allows individual player configurations with safe limits.
+- Activates only in the vehicle where it was enabled.
+
+---
+
+## Usage
+
+To use the antilag functionality in your FiveM server:
+
+1. Start the `mqc-antilag` resource by adding `ensure mqc-antilag` to your server configuration.
+2. Activate antilag in-game using the `/antilag` command.
+
+Enjoy dynamic and customizable antilag effects tailored to your server's needs!
+
