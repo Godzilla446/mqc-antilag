@@ -1,27 +1,50 @@
 <html>
-
 <head>
   <script src="nui://game/ui/jquery.js" type="text/javascript"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.1.1/howler.min.js" type="text/javascript"></script>
   <script>
-    let audioPlayer = null;
+    const audioPlayers = [];
 
-    window.addEventListener('message', function (event) {
+    window.addEventListener('message', function(event) {
       if (event.data.transactionType == "playSound") {
-        if (audioPlayer != null) {
-          audioPlayer.pause();
+        const distanceRatio = event.data.distance / event.data.maxDistance;
+        
+        // Pitch now decreases more aggressively at shorter distances
+        const pitchScale = Math.pow(distanceRatio, 0.4); // Square root for more aggressive early scaling
+        const pitch = (event.data.sourcePlayer === event.data.localPlayer) 
+          ? (1.0 - (pitchScale * 0.70)) * event.data.basePitch 
+          : (1.0 - (pitchScale * 0.70));
+        
+        // Volume stays constant until 70% distance, then scales up
+        const volumeScale = distanceRatio > 0.5 
+          ? ((distanceRatio - 0.5) / 0.5) 
+          : 0;
+        const volume = event.data.transactionVolume * (1.0 + (volumeScale * 10.0));
+        
+        const newPlayer = new Howl({ 
+          src: ["./sounds/" + event.data.transactionFile + ".ogg"],
+          volume: volume,
+          rate: pitch,
+          onend: function() {
+            const index = audioPlayers.indexOf(this);
+            if (index > -1) {
+                audioPlayers.splice(index, 1);
+            }
+          }
+        });
+
+        audioPlayers.push(newPlayer);
+        newPlayer.play();
+
+        if (audioPlayers.length > 10) {
+            audioPlayers.slice(0, audioPlayers.length - 10).forEach(player => {
+                if (!player.playing()) {
+                    player.unload();
+                }
+            });
         }
-
-        audioPlayer = new Howl({ src: ["./sounds/" + event.data.transactionFile + ".ogg"] });
-        audioPlayer.volume(event.data.transactionVolume);
-        audioPlayer.play();
-      }
-
-      if (event.data.transactionType == "updateVolume") {
-        audioPlayer.volume(event.data.transactionVolume);
       }
     });
   </script>
 </head>
-
 </html>
