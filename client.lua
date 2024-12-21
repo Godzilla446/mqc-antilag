@@ -163,7 +163,7 @@ AddEventHandler('sound_client:PlayWithinDistance', function(coords, disMax, audi
     local localPlayer = GetPlayerServerId(PlayerId())
     
     if distance <= disMax then
-        local volume = 1.0 - (distance / disMax)
+        local volume = Config.Volume - (distance / disMax)
         volume = volume * volume
         
         SendNUIMessage({
