@@ -2,6 +2,10 @@
 
 This script enables dynamic antilag functionality in your FiveM server. A configuration file, `config.lua`, is included to allow easy modification of existing values.
 
+
+https://github.com/user-attachments/assets/c2f1c5d7-165a-43a6-a86f-1ffdf6e9dfe3
+
+
 ---
 
 ## Configuration
