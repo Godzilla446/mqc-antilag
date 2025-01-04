@@ -5,12 +5,46 @@ local revLimiterRPM = Config.revLimiterRPM
 local flameSize = Config.flameSize
 local reverse = 0
 local basePitch = Config.basePitch
-local exhausts = { "exhaust", "exhaust_2", "exhaust_3", "exhaust_4","exhaust_5", "exhaust_6", "exhaust_7", "exhaust_8", "exhaust_9", "exhaust_10", "exhaust_11", "exhaust_12", "exhaust_13", "exhaust_14", "exhaust_15", "exhaust_16" }
+local exhausts = {
+    "exhaust", "exhaust_2", "exhaust_3", "exhaust_4", "exhaust_5", 
+    "exhaust_6", "exhaust_7", "exhaust_8", "exhaust_9", "exhaust_10",
+    "exhaust_11", "exhaust_12", "exhaust_13", "exhaust_14", "exhaust_15", "exhaust_16"
+}
 local fxName = "veh_backfire"
 local fxGroup = "core"
 
 
-
+function GetExhaustPositions(vehicle)
+    local positions = {}
+    local exhaustMod = GetVehicleMod(vehicle, 4) -- 4 is the exhaust mod index
+    
+    -- Get base exhaust position
+    local baseExhaustBone = GetEntityBoneIndexByName(vehicle, "exhaust")
+    if baseExhaustBone ~= -1 then
+        local coords = GetWorldPositionOfEntityBone(vehicle, baseExhaustBone)
+        table.insert(positions, coords)
+    end
+    
+    -- Calculate additional positions based on mod type
+    if exhaustMod > -1 then
+        local vehDimensions = GetModelDimensions(GetEntityModel(vehicle))
+        local rearPosition = GetOffsetFromEntityInWorldCoords(vehicle, 0.0, vehDimensions.y, 0.0)
+        
+        -- Dual exhaust setup
+        if exhaustMod == 0 then
+            local leftExhaust = GetOffsetFromEntityInWorldCoords(vehicle, -0.2, vehDimensions.y - 0.2, -0.3)
+            local rightExhaust = GetOffsetFromEntityInWorldCoords(vehicle, 0.2, vehDimensions.y - 0.2, -0.3)
+            table.insert(positions, leftExhaust)
+            table.insert(positions, rightExhaust)
+        -- Side exit exhaust
+        elseif exhaustMod == 1 then
+            local sideExhaust = GetOffsetFromEntityInWorldCoords(vehicle, -0.4, vehDimensions.y - 1.0, -0.3)
+            table.insert(positions, sideExhaust)
+        end
+    end
+    
+    return positions
+end
 
 RegisterCommand("antilag", function()
     local playerPed = PlayerPedId()
@@ -182,19 +216,34 @@ end)
 RegisterNetEvent("client_flames")
 AddEventHandler("client_flames", function(vehicle)
     if NetworkDoesEntityExistWithNetworkId(vehicle) then
-        for _, bones in pairs(exhausts) do
-            local boneIndex = GetEntityBoneIndexByName(NetToVeh(vehicle), bones)
-            if boneIndex ~= -1 then
-                UseParticleFxAssetNextCall(fxGroup)
-                local startParticle = StartParticleFxLoopedOnEntityBone(fxName, NetToVeh(vehicle), 0.0, 0.0, 0.0, 0.0,
-                    0.0,
-                    0.0,
-                    GetEntityBoneIndexByName(NetToVeh(vehicle), bones), flameSize, 0.0, 0.0, 0.0)
-                StopParticleFxLooped(startParticle, true)
+        local veh = NetToVeh(vehicle)
+        local playerCoords = GetEntityCoords(PlayerPedId())
+        local vehicleCoords = GetEntityCoords(veh)
+        
+        if #(playerCoords - vehicleCoords) < 100.0 then
+            for _, bones in pairs(exhausts) do
+                local boneIndex = GetEntityBoneIndexByName(veh, bones)
+                if boneIndex ~= -1 then
+                    local boneCoords = GetWorldPositionOfEntityBone(veh, boneIndex)
+                    local boneRot = GetEntityBoneRotation(veh, boneIndex)
+                    
+                    UseParticleFxAssetNextCall(fxGroup)
+                    local startParticle = StartParticleFxLoopedAtCoord(
+                        fxName, 
+                        boneCoords.x, boneCoords.y, boneCoords.z,
+                        boneRot.x, boneRot.y, boneRot.z,
+                        flameSize, 
+                        false, false, false, false
+                    )
+                    StopParticleFxLooped(startParticle, true)
+                end
             end
         end
     end
 end)
+
+
+
 
 function message(text)
     SetNotificationTextEntry("STRING")
